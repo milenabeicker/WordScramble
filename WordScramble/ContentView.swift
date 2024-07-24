@@ -26,7 +26,7 @@ struct ContentView: View {
                         .textInputAutocapitalization(.never)
                 }
                 
-                Section("Score: \(score)"){
+                Section{
                     ForEach(usedWords, id: \.self) {word in
                         HStack{
                             Image(systemName: "\(word.count).circle")
@@ -34,6 +34,14 @@ struct ContentView: View {
                         }
                     }
                 }
+            }
+            .safeAreaInset(edge: .bottom) {
+                Text("Score: \(score)")
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(.pink)
+                    .foregroundStyle(.white)
+                    .font(.title)
             }
             .navigationTitle(rootWord)
             .onSubmit(addNewWord)
@@ -48,10 +56,6 @@ struct ContentView: View {
     }
     
     func addNewWord() {
-        score = 0
-        newWord = ""
-        usedWords.removeAll()
-        
         let answer = newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         
         guard answer.count > 3 else {return}
@@ -62,7 +66,7 @@ struct ContentView: View {
         }
 
         guard isPossible(word: answer) else {
-            wordError(title: "Palavra não é possível", message: "Você não pode soletrar essa palavra de '\(rootWord)'!")
+            wordError(title: "Não é possível essa palavra", message: "Você não pode soletrar essa palavra de '\(rootWord)'!")
             return
         }
 
@@ -74,11 +78,17 @@ struct ContentView: View {
         withAnimation{
             usedWords.insert(answer, at: 0)
         }
-            newWord = ""
+        
             score += answer.count
+            newWord = ""
     }
     
     func startGame() {
+        usedWords.removeAll()
+        newWord = ""
+        score = 0
+        
+        
         if let startWordURL = Bundle.main.url(forResource: "start", withExtension: "txt"){
             if let startWords = try? String(contentsOf: startWordURL) {
                 let allWord = startWords.components(separatedBy: "\n")
