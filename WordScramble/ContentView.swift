@@ -16,7 +16,7 @@ struct ContentView: View {
     @State private var errorTitle = ""
     @State private var errorMessage = ""
     @State private var showingError = false
-    
+    @State private var score = 0
     
     var body: some View {
         NavigationStack{
@@ -26,7 +26,7 @@ struct ContentView: View {
                         .textInputAutocapitalization(.never)
                 }
                 
-                Section{
+                Section("Score: \(score)"){
                     ForEach(usedWords, id: \.self) {word in
                         HStack{
                             Image(systemName: "\(word.count).circle")
@@ -41,26 +41,33 @@ struct ContentView: View {
             .alert(errorTitle, isPresented: $showingError) { } message: {
                 Text(errorMessage)
             }
+            .toolbar {
+                Button("New Game", action: startGame)
+            }
         }
     }
     
     func addNewWord() {
+        score = 0
+        newWord = ""
+        usedWords.removeAll()
+        
         let answer = newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         
-        guard answer.count > 0 else {return}
+        guard answer.count > 3 else {return}
         
         guard isOriginal(word: answer) else {
-            wordError(title: "Word used already", message: "Be more original")
+            wordError(title: "Palavra já usada", message: "Seja mais original")
             return
         }
 
         guard isPossible(word: answer) else {
-            wordError(title: "Word not possible", message: "You can't spell that word from '\(rootWord)'!")
+            wordError(title: "Palavra não é possível", message: "Você não pode soletrar essa palavra de '\(rootWord)'!")
             return
         }
 
         guard isReal(word: answer) else {
-            wordError(title: "Word not recognized", message: "You can't just make them up, you know!")
+            wordError(title: "Palavra não reconhecida", message: "Você não pode simplesmente inventá-los, você sabe!")
             return
         }
         
@@ -68,6 +75,7 @@ struct ContentView: View {
             usedWords.insert(answer, at: 0)
         }
             newWord = ""
+            score += answer.count
     }
     
     func startGame() {
